@@ -17,7 +17,7 @@ class Host:
         self._parse_string(text)
 
     def _parse_string(self, text):
-        parts = text.lower().strip().split()
+        parts = text.split()
 
         self.host = parts[0]
 
@@ -67,7 +67,9 @@ class Machines:
 
         with open(filename, 'r') as f:
             for line in f:
-                self.hosts.append(Host(line))
+                x = line.lower().strip()
+                if not x.startswith('#') and x != '':
+                    self.hosts.append(Host(x))
 
     def execute(self, cmd, group=None):
         for host in self.hosts:
@@ -97,24 +99,40 @@ def dropdead(message):
     print(Fore.RED + message + Style.RESET_ALL)
     sys.exit(1)
 
+def list_things(a_list):
+    for x in a_list:
+        print(x)
+
 just_fix_windows_console()
 
 parser = OptionParser()
 parser.add_option("-f", "--file", dest="filename", default='machines.list', help="The file to list the avaiable machines", metavar="FILE")
 parser.add_option("-g", "--group", dest="group", help="The group of hosts to execute the command against")
+parser.add_option("-l", "--list", dest="lists", default=None, help="List the available hosts or groups")
 
 (options, args) = parser.parse_args()
 
 filename = options.filename
 group = options.group
+lists = options.lists
 
-if args == []:
+if args == [] and lists == None:
     dropdead("No command supplied")
 
 if not exists(filename):
     dropdead(f"Unable to locate: {filename}")
 
 m = Machines(filename)
+
+if lists is not None:
+    if lists == 'hosts':
+        list_things(m.list_hosts())
+    elif lists == 'groups':
+        list_things(m.list_groups())
+    else:
+        dropdead(f"Only 'hosts' and 'groups' can be listed. Not: {lists}")
+    sys.exit(0)
+
 if group != None and group not in m.list_groups():
     dropdead(f"Unknown group: {group}")
 
@@ -123,7 +141,5 @@ m.execute(" ".join(args), group)
 # TODO
 # Usage report when nothing is given
 # Allow a file of commands to be given, @file_of_commands, on the command line
-# Command line option to list hosts, --list=hosts
-# Command line option to list groups, --list=groups
-# Handle comments in the machines.list file
 # Parallel execution of commands???
+
