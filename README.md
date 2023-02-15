@@ -1,6 +1,6 @@
 # pssh
 
-A simple tool to execute commands against multiple hosts
+A simple tool to execute commands on multiple hosts
 
 ## Purpose
 
@@ -10,7 +10,7 @@ However since we are here (in Python land) and I have opinions about configurati
 
 ## Usage
 
-First we need a file that lists our hosts. Something like this, which by default we will name `machines.list` (a nod to `dsh`):
+First we need a file that lists our hosts. Something like this, which by default we will name `machines.list` (a nod to `dsh`). The first thing on the line is the host. Either the domain name or ip address:
 
 ```
 pinas.local
@@ -43,9 +43,18 @@ If the command you want to run has options, such as `uname -a`, then it would be
 $ pssh "uname -a"
 ```
 
+If you want to run several commands in succession then we need to write them is a file such as `test.txt`
+
+```
+uname -a
+ls -l
+```
+
+and then the commands can be run with `pssh @test.txt`. Note that the file is just a list of one liners, `test.txt` is not a `bash` script. It will be executed line by line
+
 ## Groups
 
-We can assign hosts to groups:
+We can assign groups to hosts:
 
 ```
 pinas.local apt
@@ -61,7 +70,7 @@ $ pssh --group apt "sudo apt update"
 
 If you run this you should note something. There will only be output when the command completes even if there is output as it runs so it can go quiet when it runs
 
-Without a group all the hosts will be accessed
+Without a group all the hosts will be processed
 
 ## Information
 
@@ -81,4 +90,3 @@ macm1.local brew
 ## Finally
 
 If `machines.list` is in the directory where the command is being executed then you do not need to specify it. However if it is elsewhere or has a different name then the `--file XXXX` option is what you are looking for
-

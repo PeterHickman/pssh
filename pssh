@@ -21,19 +21,17 @@ class Host:
 
         self.host = parts[0]
 
-        for part in parts[1:]:
-            if part.startswith('--'):
-                if part.startswith('--port='):
-                    self.port = part.split('=')[1]
-                elif part.startswith('--username='):
-                    self.username = part.split('=')[1]
-                elif part.startswith('--password='):
-                    self.password = part.split('=')[1]
-                else:
-                    print(f"Unknown config {part} from line: {text.strip()}")
-                    sys.exit(1)
-            else:
-                self.groups.append(part)
+        parser = OptionParser()
+        parser.add_option("--port", dest="port", default=22)
+        parser.add_option("--username", dest="username")
+        parser.add_option("--password", dest="password", default="dummy")
+
+        (options, args) = parser.parse_args(parts[1:])
+
+        self.port = options.port
+        self.username = options.username
+        self.password = options.password
+        self.groups = args
 
     def is_in_group(self, group):
         if group == None:
@@ -71,10 +69,11 @@ class Machines:
                 if not x.startswith('#') and x != '':
                     self.hosts.append(Host(x))
 
-    def execute(self, cmd, group=None):
+    def execute(self, commands, group=None):
         for host in self.hosts:
             if host.is_in_group(group):
-                host.execute(cmd)
+                for cmd in commands:
+                    host.execute(cmd)
                 print()
 
     def list_hosts(self):
@@ -103,43 +102,62 @@ def list_things(a_list):
     for x in a_list:
         print(x)
 
-just_fix_windows_console()
+def commands_from_file(filename):
+    if exists(filename):
+        commands = []
+        with open(filename, 'r') as f:
+            for line in f:
+                cmd = line.strip()
+                if cmd != '' and not cmd.startswith('#'):
+                    commands.append(cmd)
 
-parser = OptionParser()
-parser.add_option("-f", "--file", dest="filename", default='machines.list', help="The file to list the avaiable machines", metavar="FILE")
-parser.add_option("-g", "--group", dest="group", help="The group of hosts to execute the command against")
-parser.add_option("-l", "--list", dest="lists", default=None, help="List the available hosts or groups")
-
-(options, args) = parser.parse_args()
-
-filename = options.filename
-group = options.group
-lists = options.lists
-
-if args == [] and lists == None:
-    dropdead("No command supplied")
-
-if not exists(filename):
-    dropdead(f"Unable to locate: {filename}")
-
-m = Machines(filename)
-
-if lists is not None:
-    if lists == 'hosts':
-        list_things(m.list_hosts())
-    elif lists == 'groups':
-        list_things(m.list_groups())
+        return commands
     else:
-        dropdead(f"Only 'hosts' and 'groups' can be listed. Not: {lists}")
-    sys.exit(0)
+        dropdead(f"Command file {filename} not found")
 
-if group != None and group not in m.list_groups():
-    dropdead(f"Unknown group: {group}")
+def build_command(parts):
+    if len(parts) == 1 and parts[0].startswith('@'):
+        return commands_from_file(parts[0][1:])
 
-m.execute(" ".join(args), group)
+    return [ " ".join(parts) ]
+
+if __name__ == '__main__':
+    just_fix_windows_console()
+
+    parser = OptionParser()
+    parser.add_option("-f", "--file", dest="filename", default='machines.list', help="The file to list the avaiable machines", metavar="FILE")
+    parser.add_option("-g", "--group", dest="group", help="The group of hosts to execute the command against")
+    parser.add_option("-l", "--list", dest="lists", default=None, help="List the available hosts or groups")
+
+    (options, args) = parser.parse_args()
+
+    filename = options.filename
+    group = options.group
+    lists = options.lists
+
+    if args == [] and lists == None:
+        dropdead("No command supplied")
+
+    if not exists(filename):
+        dropdead(f"Unable to locate: {filename}")
+
+    m = Machines(filename)
+
+    if lists is not None:
+        if lists == 'hosts':
+            list_things(m.list_hosts())
+        elif lists == 'groups':
+            list_things(m.list_groups())
+        else:
+            dropdead(f"Only 'hosts' and 'groups' can be listed. Not: {lists}")
+        sys.exit(0)
+
+    if group != None and group not in m.list_groups():
+        dropdead(f"Unknown group: {group}")
+
+    cmd = build_command(args)
+    m.execute(cmd, group)
 
 # TODO
 # Usage report when nothing is given
-# Allow a file of commands to be given, @file_of_commands, on the command line
 # Parallel execution of commands???
-
