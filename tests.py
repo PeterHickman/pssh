@@ -7,7 +7,7 @@ from pssh import Host, Machines
 
 
 class TestHost(unittest.TestCase):
-    def check_groups(self, expected, actual):
+    def check_groups(self, actual, expected):
         self.assertEqual(len(actual), len(expected), "incorrect number of groups")
         self.assertEqual(actual, expected, "incorrect group membership / order")
 
