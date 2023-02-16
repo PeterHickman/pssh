@@ -81,7 +81,7 @@ To get a list of the hosts in the file (other than `cat` :P) you can run `pssh -
 By default your ssh setting for the hosts will be used but sometimes you need to configure them. There are three options `--username XXXX`, `--password XXXX` and `--port XXXX`. Just put them in `machines.list`
 
 ```
-pinas.local apt --username pi --password hamscmb
+pinas.local apt --username pi --password dummy
 ubuntu.local apt --username peter
 macm1.local brew
 
