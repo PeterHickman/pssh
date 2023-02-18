@@ -37,7 +37,7 @@ class Host:
 
     def _message(self, text, colour):
         styled_host = f"{Fore.BLUE + self.host + Style.RESET_ALL}"
-        ts = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f6')
+        ts = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f6")
         print(f"{styled_host} : {ts} : {colour}{text}{Style.RESET_ALL}")
 
     def is_in_group(self, group):
@@ -57,11 +57,11 @@ class Host:
 
             for line in stdout.readlines():
                 l = line.strip()
-                if l != '':
+                if l != "":
                     self._message(l, Fore.GREEN)
             for line in stderr.readlines():
                 l = line.strip()
-                if l != '':
+                if l != "":
                     self._message(l, Fore.RED)
         except paramiko.ssh_exception.NoValidConnectionsError as e:
             self._message(str(e), Fore.RED)
