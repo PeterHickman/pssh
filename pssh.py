@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+import datetime
 from os.path import exists
 from optparse import OptionParser
 
@@ -34,6 +35,11 @@ class Host:
         self.password = options.password
         self.groups = sorted(list(set(args)))
 
+    def _message(self, text, colour):
+        styled_host = f"{Fore.BLUE + self.host + Style.RESET_ALL}"
+        ts = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f6')
+        print(f"{styled_host} : {ts} : {colour}{text}{Style.RESET_ALL}")
+
     def is_in_group(self, group):
         if group == None:
             return True
@@ -41,9 +47,7 @@ class Host:
             return group in self.groups
 
     def execute(self, cmd):
-        styled_host = f"{Fore.BLUE + self.host + Style.RESET_ALL}"
-
-        print(f"{styled_host} : {Fore.YELLOW + cmd + Style.RESET_ALL}")
+        self._message(cmd, Fore.YELLOW)
 
         try:
             ssh = paramiko.SSHClient()
@@ -52,13 +56,17 @@ class Host:
             stdin, stdout, stderr = ssh.exec_command(cmd)
 
             for line in stdout.readlines():
-                print(f"{styled_host} : {Fore.GREEN + line.strip() + Style.RESET_ALL}")
+                l = line.strip()
+                if l != '':
+                    self._message(l, Fore.GREEN)
             for line in stderr.readlines():
-                print(f"{styled_host} : {Fore.RED + line.strip() + Style.RESET_ALL}")
+                l = line.strip()
+                if l != '':
+                    self._message(l, Fore.RED)
         except paramiko.ssh_exception.NoValidConnectionsError as e:
-            print(f"{styled_host} : {Fore.RED + str(e) + Style.RESET_ALL}")
+            self._message(str(e), Fore.RED)
         except paramiko.ssh_exception.AuthenticationException as e:
-            print(f"{styled_host} : {Fore.RED + str(e) + Style.RESET_ALL}")
+            self._message(str(e), Fore.RED)
 
 
 class Machines:
