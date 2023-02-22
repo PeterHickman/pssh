@@ -43,6 +43,8 @@ class Host:
     def is_in_group(self, group):
         if group == None:
             return True
+        elif group == self.host:
+            return True
         else:
             return group in self.groups
 

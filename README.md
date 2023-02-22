@@ -72,6 +72,8 @@ If you run this you should note something. There will only be output when the co
 
 Without a group all the hosts will be processed
 
+A little feature is that the hostname will be acceptable as a group which would allow you to run the command on a single host
+
 ## Information
 
 To get a list of the hosts in the file (other than `cat` :P) you can run `pssh --list hosts` and to list the available groups `pssh --list groups`

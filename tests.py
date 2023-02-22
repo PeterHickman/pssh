@@ -31,6 +31,10 @@ class TestHost(unittest.TestCase):
         h = Host("fred.local g1 x999 g2")
         self.assertEqual(h.is_in_group("g2"), True, "group in groups")
 
+    def test_hostname_as_group(self):
+        h = Host("fred.local g1 x999 g2")
+        self.assertEqual(h.is_in_group("fred.local"), True, "group in groups")
+
     def test_is_not_in_groups(self):
         h = Host("fred.local g1 x999 g2")
         self.assertEqual(h.is_in_group("not-here"), False, "group not in groups")
